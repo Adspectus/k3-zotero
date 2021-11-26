@@ -1,0 +1,15 @@
+{
+    "name": "adspectus/zotero",
+    "description": "Kirby 3 plugin for Zotero",
+    "type": "kirby-plugin",
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Adspectus",
+            "email": "adspectus@fastmail.com"
+        }
+    ],
+    "require": {
+      "getkirby/composer-installer": "^1.2"
+  }
+}

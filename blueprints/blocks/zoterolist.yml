@@ -1,0 +1,160 @@
+title: Zotero List
+icon: book
+
+tabs:
+  common:
+    label: Common
+    fields:
+      bibtype:
+        label: Bibliography Type
+        type: radio
+        width: 1/2
+        options:
+          all: All Items in Library
+          collection: All Items in Collection
+          tags: All Items for given Tag(s)
+          mypub: All Items in My Publications
+        default: all
+      blankbibtype1:
+        type: gap
+        width: 1/2
+        when:
+          bibtype: all
+      blankbibtype2:
+        type: gap
+        width: 1/2
+        when:
+          bibtype: mypub
+      collectionkey:
+        label: Zotero Key of Collection
+        type: select
+        required: true
+        width: 1/2
+        when:
+          bibtype: collection
+        options: api
+        api:
+          url: "https://api.zotero.org/users/{{ kirby.option('adspectus.zotero.userID') }}/collections?key={{ kirby.option('adspectus.zotero.apiKey') }}"
+          text: "{{ item.data.key }}: {{ item.data.name }} ({{ item.meta.numItems }} Items)"
+          value: "{{ item.data.key }}"
+      tags:
+        label: Zotero Tags
+        type: multiselect
+        required: true
+        width: 1/2
+        when:
+          bibtype: tags
+        options: api
+        api:
+          url: "https://api.zotero.org/users/{{ kirby.option('adspectus.zotero.userID') }}/items/tags?key={{ kirby.option('adspectus.zotero.apiKey') }}"
+          text: "{{ item.tag }} ({{ item.meta.numItems }} Items)"
+          value: "{{ item.tag }}"
+        help: Multiple tags will be combined with logical OR
+      usebib:
+        label: Use Bibliography?
+        type: toggle
+        text:
+          - "No"
+          - "Yes"
+        default: true
+        help: The Bibliography will be tried to use before an API call and for links to details page
+      bibpage:
+        label: Bibliography Page
+        type: radio
+        when:
+          usebib: true
+        options: query
+        query:
+          fetch: site.index.filterBy("template", "in", ["zoterobibliography"])
+          text: "{{ page.title }} ({{ page.id }}) {{ page.bibtype.value }} {{ page.collectionkey }} | {{ page.tags }}"
+          value: "{{ page.id }}"
+      showall:
+        label: Show all items?
+        type: toggle
+        width: 1/2
+        text:
+          - "No"
+          - "Yes"
+        default: true
+      blank:
+        type: gap
+        width: 1/2
+        when:
+          showall: true
+      limit:
+        label: Items to show
+        type: number
+        width: 1/2
+        min: 1
+        step: 1
+        default: 10
+        when:
+          showall: false
+      sortfield:
+        label: Sort Field
+        type: select
+        default: creator
+        width: 1/2
+        options:
+          creator: Creator
+          title: Title
+          date: Date
+      order:
+        label: Sort Order
+        type: select
+        default: auto
+        width: 1/2
+        options:
+          auto: Depending on sort field
+          asc: Newest first
+          desc: Oldest first
+
+  apisettings:
+    label: API
+    fields:
+      userid:
+        label: Zotero UserID
+        type: text
+        width: 1/2
+        placeholder: "{{ kirby.option('adspectus.zotero.userID') }}"
+        help: Use only if different from global UserID
+      apikey:
+        label: Zotero API-Key
+        type: text
+        width: 1/2
+        placeholder: "{{ kirby.option('adspectus.zotero.apiKey') }}"
+        help: Use only if different from global API-Key
+      apiformat:
+        label: Data Format
+        type: select
+        default: json
+        width: 1/3
+        options:
+          atom: Atom
+          bib: Formatted Bibliography
+          json: JSON
+          keys: Object Keys
+          versions: Key-Version object
+      include:
+        label: Included Formats
+        type: multiselect
+        default: bib
+        min: 1
+        width: 1/3
+        options:
+          bib: Formatted reference
+          citation: Formatted citation
+          data: All writable fields
+      exportformat:
+        label: Additional Formats
+        type: multiselect
+        width: 1/3
+        options:
+          bibtex: BibTeX
+          biblatex: BibLaTeX
+      citationstyle:
+        label: Citation Style
+        type: text
+        counter: false
+        default: chicago-fullnote-bibliography
+        help: The file name (without the .csl extension) of one of the styles in the <a href="">Zotero Style Repository</a> (e.g., apa)

@@ -1,0 +1,71 @@
+title: Zotero Bibliography
+icon: book
+fields:
+  subtitle:
+    label: Subtitle
+    type: text
+    width: 1/2
+  deleteitems:
+    label: Delete all items first?
+    type: toggle
+    width: 1/2
+    text:
+      - "No"
+      - "Yes"
+  userid:
+    label: Zotero UserID
+    type: text
+    width: 1/2
+    placeholder: "{{ kirby.option('adspectus.zotero.userID') }}"
+    help: Use only if different from global UserID
+  apikey:
+    label: Zotero API-Key
+    type: text
+    width: 1/2
+    placeholder: "{{ kirby.option('adspectus.zotero.apiKey') }}"
+    help: Use only if different from global API-Key
+  bibtype:
+    label: Bibliography Type
+    type: radio
+    width: 1/2
+    options:
+      all: All Items in Library
+      collection: All Items in Collection
+      tags: All Items for given Tag(s)
+      mypub: All Items in My Publications
+    default: all
+  blankbibtype1:
+    type: gap
+    width: 1/2
+    when:
+      bibtype: all
+  blankbibtype2:
+    type: gap
+    width: 1/2
+    when:
+      bibtype: mypub
+  collectionkey:
+    label: Zotero Key of Collection
+    type: select
+    required: true
+    width: 1/2
+    when:
+      bibtype: collection
+    options: api
+    api:
+      url: "https://api.zotero.org/users/{{ kirby.option('adspectus.zotero.userID') }}/collections?key={{ kirby.option('adspectus.zotero.apiKey') }}"
+      text: "{{ item.data.name }} ({{ item.meta.numItems }} Items)"
+      value: "{{ item.data.key }}"
+  tags:
+    label: Zotero Tags
+    type: multiselect
+    required: true
+    width: 1/2
+    when:
+      bibtype: tags
+    options: api
+    api:
+      url: "https://api.zotero.org/users/{{ kirby.option('adspectus.zotero.userID') }}/items/tags?key={{ kirby.option('adspectus.zotero.apiKey') }}"
+      text: "{{ item.tag }} ({{ item.meta.numItems }} Items)"
+      value: "{{ item.tag }}"
+    help: Multiple tags will be combined with logical OR

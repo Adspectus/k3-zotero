@@ -1,0 +1,86 @@
+title: Zotero Item
+icon: book
+
+tabs:
+  common:
+    label: Common
+    fields:
+      bibtype:
+        label: Bibliography Type
+        type: info
+        width: 1/2
+        theme: none
+        text: "### Single Item"
+      itemkey:
+        label: Zotero Key of Item
+        type: text
+        required: true
+        width: 1/2
+      usebib:
+        label: Use Bibliography?
+        type: toggle
+        text:
+          - "No"
+          - "Yes"
+        default: true
+        help: The Bibliography will be tried to use before an API call and for links to details page
+      bibpage:
+        label: Bibliography Page
+        type: radio
+        when:
+          usebib: true
+        options: query
+        query:
+          fetch: site.index.filterBy("template", "in", ["zoterobibliography"])
+          text: "{{ page.title }} ({{ page.id }}) {{ page.bibtype.value }} {{ page.collectionkey }} | {{ page.tags }}"
+          value: "{{ page.id }}"
+
+  apisettings:
+    label: API
+    fields:
+      userid:
+        label: Zotero UserID
+        type: text
+        width: 1/2
+        placeholder: "{{ kirby.option('adspectus.zotero.userID') }}"
+        help: Use only if different from global UserID
+      apikey:
+        label: Zotero API-Key
+        type: text
+        width: 1/2
+        placeholder: "{{ kirby.option('adspectus.zotero.apiKey') }}"
+        help: Use only if different from global API-Key
+      apiformat:
+        label: Returned data format
+        type: select
+        default: json
+        width: 1/1
+        options:
+          atom: Atom
+          bib: Formatted Bibliography
+          json: JSON
+          keys: Object Keys
+          versions: Key-Version object
+      include:
+        label: Included formats in response
+        type: multiselect
+        default: bib
+        min: 1
+        width: 1/2
+        options:
+          bib: Formatted reference (bib)
+          citation: Formatted citation (citation)
+          data: All writable fields (data)
+      exportformat:
+        label: Additional formats in response
+        type: multiselect
+        width: 1/2
+        options:
+          bibtex: BibTeX
+          biblatex: BibLaTeX
+      citationstyle:
+        label: Citation style to use for formatted references
+        type: text
+        counter: false
+        default: chicago-fullnote-bibliography
+        help: The file name (without the .csl extension) of one of the styles in the <a href="">Zotero Style Repository</a> (e.g., apa)
