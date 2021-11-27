@@ -9,7 +9,7 @@ use Kirby\Toolkit\Str;
 
 $bibType = $block->bibtype()->toString();
 $collectionKey = substr($block->collectionkey()->toString(),0,8);
-$tags = str_replace(' ','',$block->tags()->toString());
+$tags = array_map('trim',explode(',',$block->tags()->toString()));
 
 if ($block->usebib()->toBool()) {
   if ($bibType == 'all' || $bibType == 'mypub') {
@@ -19,7 +19,7 @@ if ($block->usebib()->toBool()) {
     $children = page($block->bibpage()->toString())->children()->filterBy('collections',$collectionKey,',');
   }
   if ($bibType == 'tags') {
-    $children = page($block->bibpage()->toString())->children()->filterBy('tags',$tags,',');
+    $children = page($block->bibpage()->toString())->children()->filterBy('tags','in',$tags,',');
   }
   foreach ($children->sort('sortkey') as $page) {
     $zoteroItems[$page->data()->toData('json')['key']] = ['bib' => $page->bib()->toString() ];
@@ -45,7 +45,7 @@ if (!isset($zoteroItems)) {
     'style'         => $block->citationstyle()->toString(),
     'sort'          => $block->sortfield()->toString(),
     'collectionKey' => substr($block->collectionkey()->toString(),0,8),
-    'tags'          => str_replace(' ','',$block->tags()->toString()),
+    'tags'          => implode(',',$tags),
   ];
 
   $apiOptions = array_merge(kirby()->option('adspectus.zotero'),$apiOptions);
