@@ -104,8 +104,19 @@ function createAndPublishChild (object $page,object $item) {
   $meta = $item->getMeta();
   $data = $item->getData();
   $slug = Str::slug($data->key);
+  $lang = $page->translation()->code();
+
+  if (isset($meta->creatorSummary)) {
+    if ($lang == 'de') {
+      $meta->creatorSummary = preg_replace(['/and/'],['und'],$meta->creatorSummary);
+    }
+  }
+  else {
+    $meta->creatorSummary = $data->creators[0]->name ?? $data->creators[0]->lastName;
+  }
 
   $content['title'] = $data->shortTitle !== '' ? $data->shortTitle : $data->title;
+  $content['sortkey'] = Str::slug($meta->creatorSummary . '-' . ($meta->parsedDate ?? 'oJ'));
   $content['version'] = $data->version;
   $content['tags'] = implode(',',array_map(function($element) { return $element->tag; },$data->tags));
   $content['collections'] = implode(',',$data->collections);

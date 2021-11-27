@@ -16,13 +16,6 @@ $notes = $page->files()->filterBy('filename','*','/^note-.*\.json$/');
 $cover = $page->image('cover.jpg') ?? $page->image('cover.png');
 $docs = $page->files()->filterBy('type', 'document');
 
-  if ($kirby->language()->code() !== 'de') {
-    $creatorSummary = $Meta['creatorSummary'];
-  }
-  else {
-    $creatorSummary = preg_replace(['/and/'],['und'],$Meta['creatorSummary']);
-  }
-
 ?>
 <?php snippet('header') ?>
 <main class="main" id="main">
@@ -31,7 +24,7 @@ $docs = $page->files()->filterBy('type', 'document');
     <div class="grid-flex grid-flex--gutter-large">
       <div class="cell-12 cell-md-8">
         <header>
-        <?= $creatorSummary ?>
+        <?= $Meta['creatorSummary'] ?>
           <h1><?= $page->title()->toHtml() ?></h1>
         </header>
         <div class="bib-table">

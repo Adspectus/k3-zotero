@@ -17,7 +17,7 @@
           <h1><?php echo $page->title()->html() ?> <?php echo $page->subtitle()->html() ?></h1>
         </header>
         <div class="zotero-wrapper d-hyphen">
-          <?php foreach ($page->children() as $bibitem): ?>
+          <?php foreach ($page->children()->sort('sortkey') as $bibitem): ?>
             <a style="text-decoration: none;" title="<?= t('zotero.click4details') ?>" href="<?= $bibitem->url() ?>"><?= $bibitem->bib() ?></a>
           <?php endforeach ?>
         </div>
