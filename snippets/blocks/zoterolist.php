@@ -21,7 +21,7 @@ if ($block->usebib()->toBool()) {
   if ($bibType == 'tags') {
     $children = page($block->bibpage()->toString())->children()->filterBy('tags',$tags,',');
   }
-  foreach ($children as $page) {
+  foreach ($children->sort('sortkey') as $page) {
     $zoteroItems[$page->data()->toData('json')['key']] = ['bib' => $page->bib()->toString() ];
   }
 }
