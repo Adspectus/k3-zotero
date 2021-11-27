@@ -65,7 +65,7 @@ if (!isset($zoteroItems)) {
 }
 ?>
 
-<div class="zotero-wrapper">
+<div class="zotero-wrapper d-hyphen">
 <?php foreach ($zoteroItems as $key => $item): ?>
   <?php if ($block->usebib()->toBool()): ?>
     <a style="text-decoration: none;" title="<?= t('zotero.click4details') ?>" href="/<?= $block->bibpage()->toString() ?>/<?= Str::slug($key) ?>"><?= $item['bib'] ?></a>
