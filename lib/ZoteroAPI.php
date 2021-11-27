@@ -81,7 +81,7 @@ class ZoteroAPI {
    * 
    * @var string 
    */
-  private $style = 'chicago-fullnote-bibliography';
+  private $style = 'din-1505-2';
 
   /**
    * The sort field
