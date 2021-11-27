@@ -1,4 +1,6 @@
-zotero.creators: Author(s)
+zotero.author: Author
+zotero.editor: Editor
+zotero.cartographer: Cartographer
 zotero.title: Title
 zotero.edition: Edition
 zotero.place: Place

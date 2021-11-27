@@ -1,5 +1,6 @@
-zotero.authors: Autor(en)
-zotero.editors: Herausgeber
+zotero.author: Autor
+zotero.editor: Herausgeber
+zotero.cartographer: Kartograph
 zotero.title: Titel
 zotero.edition: Auflage
 zotero.place: Ort

@@ -9,9 +9,9 @@
 
 use Kirby\Toolkit\Str;
 
-$Meta = $page->meta()->toData('json');
-$Data = $page->data()->toData('json');
-$authorsOrEditors = $page->creators()->authorsOrEditors();
+$meta = $page->meta()->toData('json');
+$data = $page->data()->toData('json');
+$creators = $page->creators()->mergeCreators();
 $notes = $page->files()->filterBy('filename','*','/^note-.*\.json$/');
 $cover = $page->image('cover.jpg') ?? $page->image('cover.png');
 $docs = $page->files()->filterBy('type', 'document');
@@ -24,21 +24,45 @@ $docs = $page->files()->filterBy('type', 'document');
     <div class="grid-flex grid-flex--gutter-large">
       <div class="cell-12 cell-md-8">
         <header>
-        <?= $Meta['creatorSummary'] ?>
+        <?= $meta['creatorSummary'] ?>
           <h1><?= $page->title()->toHtml() ?></h1>
         </header>
         <div class="bib-table">
           <div class="bib-table-body">
-            <div class="bib-table-row">
-              <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.key($authorsOrEditors)) ?></div><div class="bib-table-cell bib-table-cell-right"><?= implode("<br />",$authorsOrEditors[key($authorsOrEditors)]) ?></div>
-            </div>
-          <?php foreach (['title','edition','place','publisher','date','series','seriesNumber','volume','numberOfVolumes','numPages','ISBN','extra'] as $key): ?>
-            <?php if ($Data[$key] !== ''): ?>
-            <div class="bib-table-row">
-              <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$key) ?></div><div class="bib-table-cell bib-table-cell-right"><?= $Data[$key] ?></div>
-            </div>
-            <?php endif ?>
-          <?php endforeach ?>
+              <?php foreach ($creators as $num => $creator): ?>
+                <div class="bib-table-row">
+                  <?php if (count($creators) == 1): ?>
+                    <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.key($creator)) ?></div>
+                    <div class="bib-table-cell bib-table-cell-right"><?= $creator[key($creator)] ?></div>
+                  <?php else: ?>
+                    <?php if ($num == 0): ?>
+                      <div class="bib-table-cell bib-table-cell-left bib-table-cell-top"><?= t('zotero.'.key($creator)) ?></div>
+                      <div class="bib-table-cell bib-table-cell-right bib-table-cell-top"><?= $creator[key($creator)] ?></div>
+                    <?php elseif ($num == count($creators)-1): ?>
+                      <?php if (key($creator) == key($creators[$num-1])): ?>
+                        <div class="bib-table-cell bib-table-cell-left bib-table-cell-bot"></div>
+                      <?php else: ?>
+                        <div class="bib-table-cell bib-table-cell-left bib-table-cell-bot"><?= t('zotero.'.key($creator)) ?></div>
+                      <?php endif ?>
+                      <div class="bib-table-cell bib-table-cell-right bib-table-cell-bot"><?= $creator[key($creator)] ?></div>
+                    <?php else: ?>
+                      <?php if (key($creator) == key($creators[$num-1])): ?>
+                        <div class="bib-table-cell bib-table-cell-left bib-table-cell-bot"></div>
+                      <?php else: ?>
+                        <div class="bib-table-cell bib-table-cell-left bib-table-cell-bot"><?= t('zotero.'.key($creator)) ?></div>
+                      <?php endif ?>
+                      <div class="bib-table-cell bib-table-cell-right bib-table-cell-mid"><?= $creator[key($creator)] ?></div>
+                    <?php endif ?>
+                  <?php endif ?>
+                </div>
+              <?php endforeach ?>
+              <?php foreach (['title','edition','place','publisher','date','series','seriesNumber','volume','numberOfVolumes','numPages','ISBN','extra'] as $key): ?>
+              <?php if (isset($data[$key]) && $data[$key] !== ''): ?>
+              <div class="bib-table-row">
+                <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$key) ?></div><div class="bib-table-cell bib-table-cell-right"><?= $data[$key] ?></div>
+              </div>
+              <?php endif ?>
+            <?php endforeach ?>
           </div>
         </div>
         <?php if (count($notes)): ?>
