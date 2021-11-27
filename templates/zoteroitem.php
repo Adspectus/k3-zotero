@@ -13,7 +13,7 @@ $Meta = $page->meta()->toData('json');
 $Data = $page->data()->toData('json');
 $authorsOrEditors = $page->creators()->authorsOrEditors();
 $notes = $page->files()->filterBy('filename','*','/^note-.*\.json$/');
-$cover = $page->image('cover.jpg');
+$cover = $page->image('cover.jpg') ?? $page->image('cover.png');
 $docs = $page->files()->filterBy('type', 'document');
 
   if ($kirby->language()->code() !== 'de') {
