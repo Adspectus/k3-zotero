@@ -109,7 +109,21 @@ class ZoteroAPI {
    * 
    * @var string
    */
-  private $itemType = '-attachment';
+  private $itemType = '';
+
+  /**
+   * The limit
+   * 
+   * @var int
+   */
+  private $limit = 100;
+
+  /**
+   * The start
+   * 
+   * @var int
+   */
+  private $start = 0;
 
   /**
    * The key of an item
@@ -191,6 +205,8 @@ class ZoteroAPI {
     $this->setStyle($options['style']);
     $this->setSort($options['sort']);
     $this->setItemType($options['itemType']);
+    $this->setLimit($options['limit']);
+    $this->setStart($options['start']);
     return $this;
   }
 
@@ -316,6 +332,28 @@ class ZoteroAPI {
   }
 
   /**
+   * Set the limit
+   * 
+   * @param int $limit
+   * @return $this
+   */
+  public function setLimit(int $limit): object {
+    $this->limit = $limit;
+    return $this;
+  }
+
+  /**
+   * Set the start
+   * 
+   * @param int $start
+   * @return $this
+   */
+  public function setStart(int $start): object {
+    $this->start = $start;
+    return $this;
+  }
+
+  /**
    * Set the itemKey
    * 
    * @param string $itemKey
@@ -417,6 +455,8 @@ class ZoteroAPI {
       'sort' => $this->sort,
       'locale' => $this->locale,
       'itemType' => $this->itemType,
+      'limit' => $this->limit,
+      'start' => $this->start,
       'tag' => str_replace(',',' || ',$this->tags),
     ]);
     $url = $this->apiUrl . $this->path;
