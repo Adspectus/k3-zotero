@@ -8,7 +8,14 @@ fields:
   deleteitems:
     label: Delete all items first?
     type: toggle
-    width: 1/2
+    width: 1/4
+    text:
+      - "No"
+      - "Yes"
+  refreshitems:
+    label: Refresh items?
+    type: toggle
+    width: 1/4
     text:
       - "No"
       - "Yes"
