@@ -13,6 +13,7 @@
 
 use Adspectus\Zotero\ZoteroAPI;
 use Kirby\Toolkit\Dir;
+use Kirby\Cms\File;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Str;
 
@@ -26,7 +27,7 @@ function createBibliography($page) {
   $zotero->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
   $zotero->request()->decodeContent();
 
-  if ($zotero->fromCache() === false || $page->deleteitems()->toBool() === true) {
+  if ($page->deleteitems()->toBool() === true) {
     foreach ($page->children() as $child) {
       $child->delete();
     }
@@ -46,14 +47,6 @@ function createBibliography($page) {
         $childPage->delete();
         createAndPublishChild($page,$item);
       }
-      $thisFiles = $childPage->files();
-      if (count($thisFiles) > 0) {
-        if ($item->getNumChildren() != count($thisFiles)) {
-          foreach ($thisFiles as $file) {
-            $file->delete();
-          }
-        }
-      }
     }
   }
 
@@ -66,38 +59,60 @@ function createBibliography($page) {
 
   foreach ($zotero->getItems() as $item) {
     $data = $item->getData();
-    $slug = Str::slug($data->key);
     $parentSlug = Str::slug($data->parentItem);
-    if (! Dir::exists($page->root() . '/' . $parentSlug)) {
-      Dir::make($page->root() . '/' . $parentSlug);
-    }
+    $parentPage = $page->find($parentSlug);
+
     if ($data->itemType === 'attachment') {
-      $fileType = F::mimeToExtension($data->contentType);
-      $fileName = F::safeName($data->title) . '.' . $fileType;
-      if (! F::exists($page->root() . '/' . $parentSlug . '/' . $fileName)) {
-        $zoteroAttachment = new ZoteroAPI();
-        $zoteroAttachment->setOptions(kirby()->option('adspectus.zotero'));
-        $zoteroAttachment->setFormat('')->setInclude('')->setStyle('')->setSort('');
-        $zoteroAttachment->setRawPath('/items/' . $data->key . '/file/view');
-        $zoteroAttachment->request();
-        $fileContent = $zoteroAttachment->getContent();
-        if (isset($fileContent)) {
-          F::write($page->root() . '/' . $parentSlug . '/' . $fileName,$fileContent);
+      $fileName = F::safeName($data->filename);
+      if (F::exists($page->root() . '/' . $parentSlug . '/' . $fileName)) {
+        $thisFile = $parentPage->file($fileName);
+        if ($data->version == $thisFile->version()->toString()) {
+          continue;
+        }
+      }
+
+      $content['caption'] = $data->title;
+      $content['version'] = $data->version;
+
+      $zoteroAttachment = new ZoteroAPI();
+      $zoteroAttachment->setOptions(kirby()->option('adspectus.zotero'));
+      $zoteroAttachment->setFormat('')->setInclude('')->setStyle('')->setSort('');
+      $zoteroAttachment->setRawPath('/items/' . $data->key . '/file/view');
+      $zoteroAttachment->request();
+      $fileContent = $zoteroAttachment->getContent();
+
+      if (isset($fileContent)) {
+        if (F::write($page->root() . '/' . $fileName,$fileContent)) {
+          try {
+            File::create([
+              'content' => $content,
+              'filename' => $fileName,
+              'source' => $page->root() . '/' . $fileName,
+              'parent' => $parentPage,
+            ]);
+          }
+          catch (Exception $e) {
+
+          }
+          F::remove($page->root() . '/' . $fileName);
         }
       }
     }
     if ($data->itemType === 'note') {
-      $dateAdded = strtotime($data->dateAdded);
-      if (! F::exists($page->root() . '/' . $parentSlug . '/note-' . $dateAdded . '.json')) {
-        F::write($page->root() . '/' . $parentSlug . '/note-' . $dateAdded . '.json',json_encode($data->note,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+      $note = ['version' => $data->version, 'note' => $data->note];
+      $noteFile = $page->root() . '/' . $parentSlug . '/note-' . strtotime($data->dateAdded) . '.json';
+      if (F::exists($noteFile)) {
+        $thisNote = json_decode(F::read($noteFile));
+        if ($data->version == $thisNote->version) {
+          continue;
+        }
       }
+      F::write($noteFile,json_encode($note,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
   }
 
-  if ($page->deleteitems()->toBool() === true) {
-    $page->update(['deleteitems' => false]);
-  }
-
+  
+  $page->update(['deleteitems' => false,'refreshitems' => false]);
 }
 
 function createAndPublishChild (object $page,object $item) {

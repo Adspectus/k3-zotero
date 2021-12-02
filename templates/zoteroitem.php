@@ -65,26 +65,29 @@ $docs = $page->files()->filterBy('type', 'document');
             <?php endforeach ?>
           </div>
         </div>
-        <?php if (count($notes)): ?>
-        <div class="bib-notes">
-          <h2><?= t('zotero.notes') ?></h2>
-          <?php foreach ($notes as $note) { echo json_decode($note->read()); } ?>
-        </div>
+        <?php if (count($docs)): ?>
+          <div class="bib-attachments">
+            <h2><?= t('zotero.attachments') ?></h2>
+            <ul>
+            <?php foreach ($docs as $file): ?>
+              <li><i class="far fa-fw <?= $file->faClass() ?>"></i><a href="<?= $file->url() ?>"><?= $file->caption() ?></a> (<?= $file->humanSize() ?>)</li>
+            <?php endforeach ?>
+            </ul>
+          </div>
         <?php endif ?>
       </div>
       <div class="cell-12 cell-md-4">
-      <?php if ($cover) : ?>
-        <img src="<?php echo $cover->url() ?>" alt="Cover" text="Cover">
-      <?php endif; ?>
-      <?php if (count($docs)): ?>
-        <div class="bib-attachments">
-          <h3><?= t('zotero.attachments') ?></h3>
-          <ul>
-          <?php foreach ($docs as $file): ?>
-            <li><i class="far fa-fw <?= $file->faClass() ?>"></i><a href="<?= $file->url() ?>"><?= Str::ucwords(Str::split($file->filename(),'.')[0]) ?></a> (<?= $file->humanSize() ?>)</li>
-          <?php endforeach ?>
-          </ul>
-        </div>
+        <?php if ($cover) : ?>
+          <img src="<?php echo $cover->url() ?>" alt="Cover" text="Cover">
+        <?php endif; ?>
+        <?php if (count($notes)): ?>
+          <div class="bib-notes">
+            <h2><?= t('zotero.notes') ?></h2>
+            <?php foreach ($notes as $note) {
+              $noteContent = json_decode($note->read());
+              echo $noteContent->note;
+            } ?>
+          </div>
         <?php endif ?>
       </div>
     </div>
