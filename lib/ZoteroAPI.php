@@ -56,6 +56,13 @@ class ZoteroAPI {
   private $path = null;
 
   /**
+   * The query string added to the path.
+   *
+   * @var string|null
+   */
+  private $queryString = null;
+
+  /**
    * The returned data format.
    * 
    * @var string
@@ -206,7 +213,6 @@ class ZoteroAPI {
     $this->setSort($options['sort']);
     $this->setItemType($options['itemType']);
     $this->setLimit($options['limit']);
-    $this->setStart($options['start']);
     return $this;
   }
 
@@ -343,17 +349,6 @@ class ZoteroAPI {
   }
 
   /**
-   * Set the start
-   * 
-   * @param int $start
-   * @return $this
-   */
-  public function setStart(int $start): object {
-    $this->start = $start;
-    return $this;
-  }
-
-  /**
    * Set the itemKey
    * 
    * @param string $itemKey
@@ -427,10 +422,12 @@ class ZoteroAPI {
       $content = json_decode($this->content, null);
       if (is_null($content)) {
         $this->error[] = "Error: In " . __METHOD__ . " at line " . __LINE__ . ": could not decode JSON content.";
+        $this->decodedContent = [];
+      }
+      else {
+        $this->decodedContent = is_array($content) ? $content : [ $content ];
       }
     }
-#    return is_array($content) ? $content : [ $content ];
-    $this->decodedContent = is_array($content) ? $content : [ $content ];
     return $this;
   }
 
@@ -447,8 +444,7 @@ class ZoteroAPI {
   }
 
   public function request(): object {
-#    $exportFormat = implode(',',$this->exportFormat);
-    $this->addQueryString2Path([
+    $this->queryString = $this->buildQueryString([
       'format' => $this->format,
       'include' => $this->include . ($this->exportFormat === '' ? '' : ',' . $this->exportFormat),
       'style' => $this->style,
@@ -456,10 +452,9 @@ class ZoteroAPI {
       'locale' => $this->locale,
       'itemType' => $this->itemType,
       'limit' => $this->limit,
-      'start' => $this->start,
       'tag' => str_replace(',',' || ',$this->tags),
     ]);
-    $url = $this->apiUrl . $this->path;
+    $url = $this->apiUrl . $this->path . $this->queryString;
 
     /**
      * The cached content will only be used, if it has a Last-Modified-Version header.
@@ -491,6 +486,21 @@ class ZoteroAPI {
     if ($request->code() === 200) {
       $this->header = $request->headers();
       $this->content = $request->content();
+      if (isset($this->header['Total-Results'])) {
+        $chunk[] = $request->content();
+        $maxFactor = floor($this->header['Total-Results'] / $this->limit);
+        $factor = 1;
+        while ($factor <= $maxFactor) {
+          $this->start = $factor++ * $this->limit;
+          $newUrl = $this->apiUrl . $this->path . $this->queryString . '&start=' . $this->start;
+          $newRequest = Remote::request($newUrl,$urlOptions);
+          $chunk[] = $newRequest->content();
+        }
+        $this->content = $this->combineChunks($chunk);
+      }
+#      else {
+#        $this->content = '';
+#      }
       $this->fromCache = false;
       if (is_null($this->cache) === false) {
         $this->cache->set(md5($url),['header' => $this->header,'content' => $this->content]);
@@ -570,16 +580,31 @@ class ZoteroAPI {
   }
 
   /**
-   * Append query strings to the path.
+   * Set query string.
    *
    * @param array $queries
+   * @return string $queryString
    */
-  private function addQueryString2Path(array $queries): void {
-    $path = $this->path;
+  private function buildQueryString(array $queries): string {
+    $queryString = '';
     foreach ($queries as $key => $value) {
-        $separator = (strpos($path, '?') !== false) ? '&' : '?';
-        $path .= $separator . $key . '=' . urlencode($value);
+        $separator = (strpos($queryString, '?') !== false) ? '&' : '?';
+        $queryString .= $separator . $key . '=' . urlencode($value);
     }
-    $this->path = $path;
+    return $queryString;
+  }
+
+  /**
+   * Combine chunks.
+   * 
+   * @param array $chunk
+   * @return string $content
+   */
+  private function combineChunks(array $chunk): string {
+    $content = [];
+    foreach ($chunk as $contentString) {
+      $content = array_merge($content,json_decode($contentString));
+    }
+    return json_encode($content);
   }
 }
