@@ -1,6 +1,6 @@
-zotero.author: Author
-zotero.editor: Editor
-zotero.cartographer: Cartographer
+zotero.author: Author(s)
+zotero.editor: Editor(s)
+zotero.cartographer: Cartographer(s)
 zotero.title: Title
 zotero.edition: Edition
 zotero.place: Place
@@ -12,7 +12,7 @@ zotero.volume: Volume
 zotero.numberOfVolumes: Volumes
 zotero.numPages: Pages
 zotero.ISBN: ISBN
-zotero.extra: Notice
-zotero.atachments: Attachments
+zotero.extra: Notice(s)
+zotero.atachments: Attachment(s)
 zotero.click4details: Click to show details
-zotero.notes: notes
+zotero.notes: Note(s)
