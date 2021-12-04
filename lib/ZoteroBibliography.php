@@ -17,14 +17,17 @@ use Kirby\Cms\File;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Str;
 
+if (!function_exists('str_contains')) {
+  function str_contains($haystack, $needle) {
+      return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+  }
+}
 
 function createBibliography($page) {
 
   $zotero = new ZoteroAPI();
   $zotero->setOptions(kirby()->option('adspectus.zotero'));
-  $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]));
-  $zotero->setItemType('-attachment || note');
-  $zotero->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
+  $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]))->setInclude('bib,data')->setStyle($page->citationstyle()->toString())->setItemType('-attachment || note')->setLimit(100)->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
   $zotero->request()->decodeContent();
 
   if ($page->deleteitems()->toBool() === true) {
@@ -52,9 +55,7 @@ function createBibliography($page) {
 
   $zotero = new ZoteroAPI();
   $zotero->setOptions(kirby()->option('adspectus.zotero'));
-  $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]));
-  $zotero->setItemType('attachment || note');
-  $zotero->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
+  $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]))->setItemType('attachment || note')->setLimit(100)->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
   $zotero->request()->decodeContent();
 
   foreach ($zotero->getItems() as $item) {
@@ -76,7 +77,7 @@ function createBibliography($page) {
 
       $zoteroAttachment = new ZoteroAPI();
       $zoteroAttachment->setOptions(kirby()->option('adspectus.zotero'));
-      $zoteroAttachment->setFormat('')->setInclude('')->setStyle('')->setSort('');
+#      $zoteroAttachment->setFormat('')->setInclude('')->setStyle('')->setSort('');
       $zoteroAttachment->setRawPath('/items/' . $data->key . '/file/view');
       $zoteroAttachment->request();
       $fileContent = $zoteroAttachment->getContent();

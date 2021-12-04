@@ -5,17 +5,19 @@ fields:
     label: Subtitle
     type: text
     width: 1/2
-  deleteitems:
-    label: Delete all items first?
+  refreshitems:
+    label: Refresh items?
     type: toggle
     width: 1/4
     text:
       - "No"
       - "Yes"
-  refreshitems:
-    label: Refresh items?
+  deleteitems:
+    label: Delete all items first?
     type: toggle
     width: 1/4
+    when:
+      refreshitems: true
     text:
       - "No"
       - "Yes"
@@ -31,6 +33,12 @@ fields:
     width: 1/2
     placeholder: "{{ kirby.option('adspectus.zotero.apiKey') }}"
     help: Use only if different from global API-Key
+  citationstyle:
+    label: Citation Style
+    type: text
+    counter: false
+    default: iso690-author-date-de
+    help: The file name (without the .csl extension) of one of the styles in the <a href="">Zotero Style Repository</a> (e.g., apa)
   bibtype:
     label: Bibliography Type
     type: radio
