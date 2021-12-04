@@ -56,13 +56,38 @@ $docs = $page->files()->filterBy('type', 'document');
                   <?php endif ?>
                 </div>
               <?php endforeach ?>
-              <?php foreach (['title','edition','place','publisher','date','series','seriesNumber','volume','numberOfVolumes','numPages','ISBN','extra'] as $key): ?>
+              <?php foreach (['title','edition','place','publisher','date','series','seriesNumber','volume','numberOfVolumes','numPages','ISBN'] as $key): ?>
               <?php if (isset($data[$key]) && $data[$key] !== ''): ?>
-              <div class="bib-table-row">
-                <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$key) ?></div><div class="bib-table-cell bib-table-cell-right d-hyphen"><?= $data[$key] ?></div>
-              </div>
+                <div class="bib-table-row">
+                  <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$key) ?></div>
+                  <div class="bib-table-cell bib-table-cell-right d-hyphen"><?= $data[$key] ?></div>
+                </div>
               <?php endif ?>
             <?php endforeach ?>
+
+            <?php if (isset($data['extra']) && $data['extra'] !== ''): ?>
+              <div class="bib-table-row">
+                <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.extra') ?></div>
+                <div class="bib-table-cell bib-table-cell-right d-hyphen">
+                <?php foreach (preg_split('/\n+/',$data['extra']) as $index => $extra) {
+                  list($key,$val) = preg_split('/\s*:\s*/',$extra,2);
+                  if ($index > 0) { echo '<br />'; }
+                  if (isset($key)) {
+                    if (str_contains($key,'Link')) {
+                      echo '<a href="'.$val.'" target="_blank">'.$key.'</a>';
+                    }
+                    else {
+                      echo (empty($key) ? '' : $key . ': ') . $val;
+                    }
+                  }
+                  else {
+                    echo $val;
+                  }
+                } ?>
+                </div>
+              </div>
+            <?php endif ?>
+
           </div>
         </div>
         <?php if (count($docs)): ?>
