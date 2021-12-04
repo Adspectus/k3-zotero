@@ -82,5 +82,5 @@ tabs:
         label: Citation style to use for formatted references
         type: text
         counter: false
-        default: din-1505-2
+        default: iso690-author-date-de
         help: The file name (without the .csl extension) of one of the styles in the <a href="">Zotero Style Repository</a> (e.g., apa)
