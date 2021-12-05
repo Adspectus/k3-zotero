@@ -36,9 +36,28 @@ fields:
   citationstyle:
     label: Citation Style
     type: text
+    width: 1/2
     counter: false
     default: iso690-author-date-de
     help: The file name (without the .csl extension) of one of the styles in the <a href="">Zotero Style Repository</a> (e.g., apa)
+  usepagination:
+    label: Use Pagination?
+    type: toggle
+    width: 1/4
+    text:
+      - "No"
+      - "Yes"
+    default: true
+  chunksize:
+    label: Items on page
+    type: number
+    width: 1/4
+    default: 10
+    min: 0
+    step: 1
+    when:
+      usepagination: true
+    help: 0 means unlimited
   bibtype:
     label: Bibliography Type
     type: radio
