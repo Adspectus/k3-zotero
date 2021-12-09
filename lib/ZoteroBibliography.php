@@ -25,11 +25,17 @@ if (!function_exists('str_contains')) {
 
 function createBibliography($page) {
 
+  /**
+   * Get the items without attachments or notes.
+   */
   $zotero = new ZoteroAPI();
   $zotero->setOptions(kirby()->option('adspectus.zotero'));
   $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]))->setInclude('bib,data')->setStyle($page->citationstyle()->toString())->setItemType('-attachment || note')->setLimit(100)->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
   $zotero->request()->decodeContent();
 
+  /**
+   * If the Deleteitems toggle is set to true, all children will be deleted first.
+   */
   if ($page->deleteitems()->toBool() === true) {
     foreach ($page->children() as $child) {
       $child->delete();
@@ -37,10 +43,16 @@ function createBibliography($page) {
   }
 
   foreach ($zotero->getItems() as $key => $item) {
-    $slug = Str::slug($key);
+    /**
+     * First it will be checked, if a child page already exists.
+     */
+    $childPage = $page->find(Str::slug($key));
 
-    $childPage = $page->find($slug);
-
+    /**
+     * If a child page does not exist, it will be created.
+     * If it exist, the version number will be compared. If the versions differ,
+     * the old page will be deleted and the new will be created.
+     */
     if (is_null($childPage)) {
       createAndPublishChild($page,$item);
     }
@@ -53,6 +65,9 @@ function createBibliography($page) {
     }
   }
 
+  /**
+   * After working on the items, the attachments and notes will be fetched.
+   */
   $zotero = new ZoteroAPI();
   $zotero->setOptions(kirby()->option('adspectus.zotero'));
   $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]))->setItemType('attachment || note')->setLimit(100)->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
@@ -63,7 +78,16 @@ function createBibliography($page) {
     $parentSlug = Str::slug($data->parentItem);
     $parentPage = $page->find($parentSlug);
 
+    /**
+     * Attachments
+     */
     if ($data->itemType === 'attachment') {
+      /**
+       * First it will be checked, if a file already exist. If not, it will
+       * be fetched. If it exists, the version number will be compared. If
+       * the versions differ, the file will be fetched as well. Otherwise the
+       * next file is processed.
+       */
       $fileName = F::safeName($data->filename);
       if (F::exists($page->root() . '/' . $parentSlug . '/' . $fileName)) {
         $thisFile = $parentPage->file($fileName);
@@ -74,12 +98,16 @@ function createBibliography($page) {
 
       $content['caption'] = $data->title;
       $content['version'] = $data->version;
+      $content['tags'] = implode(',',array_map(function($element) { return $element->tag; },$data->tags));
 
+      /**
+       * A new request is necessary to download the file.
+       */
       $zoteroAttachment = new ZoteroAPI();
       $zoteroAttachment->setOptions(kirby()->option('adspectus.zotero'));
-#      $zoteroAttachment->setFormat('')->setInclude('')->setStyle('')->setSort('');
       $zoteroAttachment->setRawPath('/items/' . $data->key . '/file/view');
       $zoteroAttachment->request();
+
       $fileContent = $zoteroAttachment->getContent();
 
       if (isset($fileContent)) {
@@ -99,6 +127,10 @@ function createBibliography($page) {
         }
       }
     }
+
+    /**
+     * Notes
+     */
     if ($data->itemType === 'note') {
       $note = ['version' => $data->version, 'note' => $data->note];
       $noteFile = $page->root() . '/' . $parentSlug . '/note-' . strtotime($data->dateAdded) . '.json';
@@ -112,7 +144,9 @@ function createBibliography($page) {
     }
   }
 
-  
+  /**
+   * Last, the toggles Deleteitems and Refreshitems will be resetted to false.
+   */
   $page->update(['deleteitems' => false,'refreshitems' => false]);
 }
 
@@ -122,11 +156,19 @@ function createAndPublishChild (object $page,object $item) {
   $slug = Str::slug($data->key);
   $lang = $page->translation()->code();
 
+  /**
+   * Even though when the german version is requested, the creatorSummary field
+   * within the meta section of Zotero, contains the word "and" instead of "und"
+   * if the item has multiple creators.
+   */
   if (isset($meta->creatorSummary)) {
     if ($lang == 'de') {
       $meta->creatorSummary = preg_replace(['/and/'],['und'],$meta->creatorSummary);
     }
   }
+  /**
+   * Some items do not even have a creatorSummary field.
+   */
   else {
     $meta->creatorSummary = $data->creators[0]->name ?? $data->creators[0]->lastName;
   }
