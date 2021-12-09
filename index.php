@@ -29,40 +29,10 @@ if (kirby()->option('debug')) {
 }
 
 Kirby::plugin('adspectus/zotero', [
-  'options' => [
-    'cache'        => true,
-    'apiKey'       => '',
-    'userID'       => '',
-    'groupID'      => '',
-    'locale'       => 'en_US',
-    'format'       => 'json',
-    'include'      => 'data',
-    'exportFormat' => '',
-    'style'        => 'chicago-note-bibliography',
-    'sort'         => 'dateModified',
-    'itemType'     => '',
-    'limit'        => 25,
-    'start'        => 0,
-  ],
-  'hooks' => [
-    'page.update:after' => function($newPage) {
-      if ($newPage->template() == 'zoterobibliography') {
-        createBibliography($newPage);
-      }
-    }
-  ],
   'blueprints' => [
     'pages/zoterobibliography' => __DIR__ . '/blueprints/zoterobibliography.yml',
     'blocks/zoterolist' => __DIR__ . '/blueprints/blocks/zoterolist.yml',
     'blocks/zoteroitem' => __DIR__ . '/blueprints/blocks/zoteroitem.yml',
-  ],
-  'snippets' => [
-    'blocks/zoterolist' => __DIR__ . '/snippets/blocks/zoterolist.php',
-    'blocks/zoteroitem' => __DIR__ . '/snippets/blocks/zoteroitem.php',
-  ],
-  'templates' => [
-    'zoterobibliography' => __DIR__ . '/templates/zoterobibliography.php',
-    'zoteroitem' => __DIR__ . '/templates/zoteroitem.php',
   ],
   'fieldMethods' => [
     'mergeCreators' => function($field) {
@@ -96,9 +66,38 @@ Kirby::plugin('adspectus/zotero', [
       return sprintf("%.{$decimals}f", $this->size() / pow(1024, $factor)) . $sz[$factor];
     }
   ],
+  'hooks' => [
+    'page.update:after' => function($newPage) {
+      if ($newPage->template() == 'zoterobibliography') {
+        createBibliography($newPage);
+      }
+    }
+  ],
+  'options' => [
+    'cache'        => true,
+    'apiKey'       => '',
+    'userID'       => '',
+    'groupID'      => '',
+    'locale'       => 'en_US',
+    'format'       => 'json',
+    'include'      => 'data',
+    'exportFormat' => '',
+    'style'        => 'chicago-note-bibliography',
+    'sort'         => 'dateModified',
+    'itemType'     => '',
+    'limit'        => 25,
+    'start'        => 0,
+  ],
+  'snippets' => [
+    'blocks/zoterolist' => __DIR__ . '/snippets/blocks/zoterolist.php',
+    'blocks/zoteroitem' => __DIR__ . '/snippets/blocks/zoteroitem.php',
+  ],
+  'templates' => [
+    'zoterobibliography' => __DIR__ . '/templates/zoterobibliography.php',
+    'zoteroitem' => __DIR__ . '/templates/zoteroitem.php',
+  ],
   'translations' => [
     'en' => Yaml::decode(F::read(__DIR__ . '/translations/en.yml')),
     'de' => Yaml::decode(F::read(__DIR__ . '/translations/de.yml'))
   ]
 ]);
-
