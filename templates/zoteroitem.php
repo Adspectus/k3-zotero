@@ -14,7 +14,15 @@ $data = $page->data()->toData('json');
 $creators = $page->creators()->mergeCreators();
 $notes = $page->files()->filterBy('filename','*','/^note-.*\.json$/');
 $cover = $page->image('cover.jpg') ?? $page->image('cover.png');
-$docs = $page->files()->filterBy('type', 'document');
+$docs = $page->files()->filterBy('type', 'document')->filter(function($file) {
+  if (!kirby()->user()) {
+    $tags = array_map('trim',explode(',',$file->tags()->toString()));
+    if (in_array('Protected',$tags)) {
+      return false;
+    }
+  }
+  return true;
+});
 
 ?>
 <?php snippet('header') ?>
