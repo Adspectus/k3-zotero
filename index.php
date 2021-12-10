@@ -53,19 +53,6 @@ Kirby::plugin('adspectus/zotero', [
       return $newCreators;
     }
   ],
-  'fileMethods' => [
-    'faClass' => function() {
-      switch ($this->extension()) {
-        case 'pdf': return 'fa-file-pdf'; break;
-        default: return 'fa-file';
-      }
-    },
-    'humanSize' => function($decimals = 2) {
-      $sz = array('B','KB','MB','GB');
-      $factor = floor((strlen($this->size()) - 1) / 3);
-      return sprintf("%.{$decimals}f", $this->size() / pow(1024, $factor)) . $sz[$factor];
-    }
-  ],
   'hooks' => [
     'page.update:after' => function($newPage) {
       if ($newPage->template() == 'zoterobibliography') {
