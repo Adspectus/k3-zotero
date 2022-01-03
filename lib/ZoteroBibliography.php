@@ -23,6 +23,12 @@ if (!function_exists('str_contains')) {
   }
 }
 
+function deleteBibliography($page) {
+  foreach ($page->children() as $child) {
+    $child->delete();
+  }
+}
+
 function createBibliography($page) {
 
   /**
@@ -32,15 +38,6 @@ function createBibliography($page) {
   $zotero->setOptions(kirby()->option('adspectus.zotero'));
   $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]))->setInclude('bib,data')->setStyle($page->citationstyle()->toString())->setItemType('-attachment || note')->setLimit(100)->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
   $zotero->request()->decodeContent();
-
-  /**
-   * If the Deleteitems toggle is set to true, all children will be deleted first.
-   */
-  if ($page->deleteitems()->toBool() === true) {
-    foreach ($page->children() as $child) {
-      $child->delete();
-    }
-  }
 
   foreach ($zotero->getItems() as $key => $item) {
     /**
