@@ -22,10 +22,10 @@ load([
 
 require __DIR__ . '/lib/ZoteroBibliography.php';
 
-if (kirby()->option('debug')) {
-  ini_set('xdebug.var_display_max_children', -1);
-  ini_set('xdebug.var_display_max_data', -1);
-  ini_set('xdebug.var_display_max_depth', 10);
+if (kirby()->option('debug')) { # The following settings might cause memeory issues (503 error in browser)
+#  ini_set('xdebug.var_display_max_children', -1); # Default: 128
+  ini_set('xdebug.var_display_max_data', -1); # Default: 512
+#  ini_set('xdebug.var_display_max_depth', 10); # Default: 3
 }
 
 Kirby::plugin('adspectus/zotero', [
@@ -54,9 +54,28 @@ Kirby::plugin('adspectus/zotero', [
     }
   ],
   'hooks' => [
-    'page.update:after' => function($newPage) {
+    'page.update:after' => function($newPage,$oldPage) {
       if ($newPage->template() == 'zoterobibliography') {
-        createBibliography($newPage);
+        if ($newPage->isPublished()) {
+          if ($newPage->deleteitems()->toBool() === true) {
+            deleteBibliography($newPage);
+          }
+          createBibliography($newPage);
+        }
+      }
+    },
+    'page.changeStatus:before' => function($page,$status,$position) {
+      if ($page->template() == 'zoterobibliography') {
+        if ($status == 'draft') {
+          deleteBibliography($page);
+        }
+      }
+    },
+    'page.changeStatus:after' => function($newPage,$oldPage) {
+      if ($newPage->template() == 'zoterobibliography') {
+        if ($newPage->isPublished()) {
+          createBibliography($newPage);
+        }
       }
     }
   ],
