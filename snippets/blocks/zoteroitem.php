@@ -7,14 +7,16 @@
 use Adspectus\Zotero\ZoteroAPI;
 use Kirby\Toolkit\Str;
 
+$useBib = $block->usebib()->toBool();
 $slug = Str::slug($block->itemkey()->toString());
 
-if ($block->usebib()->toBool()) {
-  $page = page($block->bibpage()->toString())->children()->find($slug);
+if ($useBib) {
+  $page = $kirby->page($block->bibpage()->toString())->children()->find($slug);
   $zoteroItems[$page->data()->toData('json')['key']] = ['bib' => $page->bib()->toString() ];
 }
 
 if (!isset($zoteroItems)) {
+  $useBib = false;
   if ($block->apikey()->toString() !== '') {
     $apiOptions['apiKey'] = $block->apikey()->toString();
   }
@@ -50,7 +52,7 @@ if (!isset($zoteroItems)) {
 
 <div class="zotero-wrapper d-hyphen">
   <?php foreach ($zoteroItems as $key => $item): ?>
-    <?php if ($block->usebib()->toBool()): ?>
+    <?php if ($useBib): ?>
       <a style="text-decoration: none;" title="<?= t('zotero.click4details') ?>" href="/<?= $block->bibpage()->toString() ?>/<?= Str::slug($key) ?>"><?= $item['bib'] ?></a>
     <?php else: ?>
       <?= $item['bib'] ?>
