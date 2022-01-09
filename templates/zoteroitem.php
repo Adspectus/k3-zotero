@@ -67,15 +67,23 @@ $docs = $page->files()->filterBy('type', 'document')->filter(function($file) {
               <?php foreach (['title','edition','place','publisher','date','series','seriesNumber','volume','numberOfVolumes','numPages','ISBN'] as $key): ?>
               <?php if (isset($data[$key]) && $data[$key] !== ''): ?>
                 <div class="bib-table-row">
-                  <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$key) ?></div>
-                  <div class="bib-table-cell bib-table-cell-right d-hyphen"><?= $data[$key] ?></div>
+                <?php if ($key == 'date'): ?>
+                  <?php if (preg_match('/^\d{4}$/',$data[$key])): ?>
+                    <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$data['itemType'].'.year') ?></div>
+                  <?php else: ?>
+                    <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$data['itemType'].'.date') ?></div>
+                  <?php endif ?>
+                <?php else: ?>
+                  <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$data['itemType'].'.'.$key) ?></div>
+                <?php endif ?>
+                <div class="bib-table-cell bib-table-cell-right d-hyphen"><?= $data[$key] ?></div>
                 </div>
               <?php endif ?>
             <?php endforeach ?>
 
             <?php if (isset($data['extra']) && $data['extra'] !== ''): ?>
               <div class="bib-table-row">
-                <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.extra') ?></div>
+                <div class="bib-table-cell bib-table-cell-left"><?= t('zotero.'.$data['itemType'].'.'.'extra') ?></div>
                 <div class="bib-table-cell bib-table-cell-right d-hyphen">
                 <?php foreach (preg_split('/\n+/',$data['extra']) as $index => $extra) {
                   list($key,$val) = preg_split('/\s*:\s*/',$extra,2);
