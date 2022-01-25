@@ -46,7 +46,7 @@ tabs:
           bibtype: tags
         options: api
         api:
-          url: "https://api.zotero.org/users/{{ kirby.option('adspectus.zotero.userID') }}/items/tags?key={{ kirby.option('adspectus.zotero.apiKey') }}"
+          url: "https://api.zotero.org/users/{{ kirby.option('adspectus.zotero.userID') }}/items/tags?key={{ kirby.option('adspectus.zotero.apiKey') }}&limit=100&sort=title"
           text: "{{ item.tag }} ({{ item.meta.numItems }} Items)"
           value: "{{ item.tag }}"
         help: Multiple tags will be combined with logical OR
