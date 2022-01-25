@@ -53,7 +53,7 @@ if (!isset($zoteroItems)) {
 <div class="zotero-wrapper d-hyphen">
   <?php foreach ($zoteroItems as $key => $item): ?>
     <?php if ($useBib): ?>
-      <a style="text-decoration: none;" title="<?= t('zotero.click4details') ?>" href="/<?= $block->bibpage()->toString() ?>/<?= Str::slug($key) ?>"><?= $item['bib'] ?></a>
+      <a title="<?= t('zotero.click4details') ?>" href="/<?= $block->bibpage()->toString() ?>/<?= Str::slug($key) ?>"><?= $item['bib'] ?></a>
     <?php else: ?>
       <?= $item['bib'] ?>
     <?php endif ?>
