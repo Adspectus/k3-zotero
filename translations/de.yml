@@ -14,6 +14,19 @@ zotero.book.numberOfVolumes: Bände
 zotero.book.numPages: Seiten
 zotero.book.ISBN: ISBN
 zotero.book.extra: Hinweis(e)
+zotero.manuscript.title: Titel
+zotero.manuscript.edition: Auflage
+zotero.manuscript.place: Ort
+zotero.manuscript.publisher: Verlag
+zotero.manuscript.date: Datum
+zotero.manuscript.year: Jahr
+zotero.manuscript.series: Reihe
+zotero.manuscript.seriesNumber: Nummer
+zotero.manuscript.volume: Band
+zotero.manuscript.numberOfVolumes: Bände
+zotero.manuscript.numPages: Seiten
+zotero.manuscript.ISBN: ISBN
+zotero.manuscript.extra: Hinweis(e)
 zotero.map.title: Titel
 zotero.map.edition: Berichtigt bis
 zotero.map.place: Ort
