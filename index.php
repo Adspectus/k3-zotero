@@ -14,7 +14,7 @@
 
 use Kirby\Cms\App as Kirby;
 use Kirby\Data\Yaml;
-use Kirby\Toolkit\F;
+use Kirby\Filesystem\F;
 
 load([
   'Adspectus\\Zotero\\ZoteroAPI' => 'lib/ZoteroAPI.php',

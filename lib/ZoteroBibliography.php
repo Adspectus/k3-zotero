@@ -12,9 +12,8 @@
  */
 
 use Adspectus\Zotero\ZoteroAPI;
-use Kirby\Toolkit\Dir;
 use Kirby\Cms\File;
-use Kirby\Toolkit\F;
+use Kirby\Filesystem\F;
 use Kirby\Toolkit\Str;
 
 if (!function_exists('str_contains')) {
