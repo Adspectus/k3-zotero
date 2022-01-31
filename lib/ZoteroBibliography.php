@@ -22,13 +22,15 @@ if (!function_exists('str_contains')) {
   }
 }
 
-function deleteBibliography($page) {
+function deleteBibliography($page,bool $debug = false) {
   foreach ($page->children() as $child) {
     $child->delete();
   }
 }
 
-function createBibliography($page) {
+function createBibliography($page,bool $debug = false) {
+
+  $debug && formatPrintLn(['underline'],"\nWorking on items...");
 
   /**
    * Get the items without attachments or notes.
@@ -39,6 +41,8 @@ function createBibliography($page) {
   $zotero->request()->decodeContent();
 
   foreach ($zotero->getItems() as $key => $item) {
+    $debug && print("Item " . $key);
+
     /**
      * First it will be checked, if a child page already exists.
      */
@@ -50,16 +54,24 @@ function createBibliography($page) {
      * the old page will be deleted and the new will be created.
      */
     if (is_null($childPage)) {
-      createAndPublishChild($page,$item);
+      $debug && formatPrint(['blue']," missing, will be created");
+      createAndPublishChild($page,$item,$debug);
     }
     else {
+      $debug && formatPrint(['green']," exists");
       $thisVersion = $childPage->version()->toInt();
       if ($item->getVersion() != $thisVersion) {
+        $debug && formatPrint(['blue'],", but outdated, will be deleted and recreated");
         $childPage->delete();
-        createAndPublishChild($page,$item);
+        createAndPublishChild($page,$item,$debug);
+      }
+      else {
+        $debug && formatPrint(['green'],", same version, skipping.\n");
       }
     }
   }
+
+  $debug && formatPrintLn(['underline'],"\nWorking on attachments and notes...");
 
   /**
    * After working on the items, the attachments and notes will be fetched.
@@ -69,7 +81,8 @@ function createBibliography($page) {
   $zotero->setLocale(str_replace('_','-',explode('.',kirby()->language()->locale(LC_ALL))[0]))->setItemType('attachment || note')->setLimit(100)->setCollectionKey($page->collectionkey()->toString())->setPath($page->bibtype()->toString());
   $zotero->request()->decodeContent();
 
-  foreach ($zotero->getItems() as $item) {
+  foreach ($zotero->getItems() as $key => $item) {
+    $debug && print("Item " . $key);
     $data = $item->getData();
     $parentSlug = Str::slug($data->parentItem);
     $parentPage = $page->find($parentSlug);
@@ -86,10 +99,18 @@ function createBibliography($page) {
        */
       $fileName = F::safeName($data->filename);
       if (F::exists($page->root() . '/' . $parentSlug . '/' . $fileName)) {
+        $debug && formatPrint(['green']," exists");
         $thisFile = $parentPage->file($fileName);
         if ($data->version == $thisFile->version()->toString()) {
+          $debug && formatPrint(['green'],", same version, skipping.\n");
           continue;
         }
+        else {
+          $debug && formatPrint(['blue'],", but outdated, will be recreated");
+        }
+      }
+      else {
+        $debug && formatPrint(['blue']," missing, will be created");
       }
 
       $content['caption'] = $data->title;
@@ -110,6 +131,7 @@ function createBibliography($page) {
         if (F::write($page->root() . '/' . $fileName,$fileContent)) {
           try {
             File::create([
+              'blueprint' => ['accept' => true],
               'content' => $content,
               'filename' => $fileName,
               'source' => $page->root() . '/' . $fileName,
@@ -117,10 +139,17 @@ function createBibliography($page) {
             ]);
           }
           catch (Exception $e) {
-
+            $debug && formatPrintLn(['red'],$e);
           }
           F::remove($page->root() . '/' . $fileName);
+          $debug && formatPrint(['green']," as " . $fileName . ", done.\n");
         }
+        else {
+          $debug && formatPrintLn(['red'],", not writable.");
+        }
+      }
+      else {
+        $debug && formatPrintLn(['red'],", no content.");
       }
     }
 
@@ -131,22 +160,31 @@ function createBibliography($page) {
       $note = ['version' => $data->version, 'note' => $data->note];
       $noteFile = $page->root() . '/' . $parentSlug . '/note-' . strtotime($data->dateAdded) . '.json';
       if (F::exists($noteFile)) {
+        $debug && formatPrint(['green']," exists");
         $thisNote = json_decode(F::read($noteFile));
         if ($data->version == $thisNote->version) {
+          $debug && formatPrintLn(['green'],", same version, skipping.");
           continue;
         }
+        else {
+          $debug && formatPrint(['blue'],", but outdated, will be recreated");
+        }
+      }
+      else {
+        $debug && formatPrint(['blue']," missing, will be created");
       }
       F::write($noteFile,json_encode($note,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+      $debug && formatPrintLn(['green'],", done.");
     }
   }
 
   /**
    * Last, the toggles Deleteitems and Refreshitems will be resetted to false.
    */
-  $page->update(['deleteitems' => false,'refreshitems' => false]);
+  $debug || $page->update(['deleteitems' => false,'refreshitems' => false]);
 }
 
-function createAndPublishChild (object $page,object $item) {
+function createAndPublishChild (object $page,object $item,bool $debug = false) {
   $meta = $item->getMeta();
   $data = $item->getData();
   $slug = Str::slug($data->key);
@@ -191,4 +229,19 @@ function createAndPublishChild (object $page,object $item) {
 
   $subPage = $page->createChild($pageProperties);
   $subPage->publish();
+  $debug && formatPrintLn(['green'],", done and published.");
+}
+
+function formatPrint(array $format=[],string $text = '') {
+  $codes=[
+    'bold'=>1,
+    'italic'=>3, 'underline'=>4, 'strikethrough'=>9,
+    'black'=>30, 'red'=>31, 'green'=>32, 'yellow'=>33,'blue'=>34, 'magenta'=>35, 'cyan'=>36, 'white'=>37,
+    'blackbg'=>40, 'redbg'=>41, 'greenbg'=>42, 'yellowbg'=>44,'bluebg'=>44, 'magentabg'=>45, 'cyanbg'=>46, 'lightgreybg'=>47
+  ];
+  $formatMap = array_map(function ($v) use ($codes) { return $codes[$v]; }, $format);
+  echo "\e[".implode(';',$formatMap).'m'.$text."\e[0m";
+}
+function formatPrintLn(array $format=[], string $text='') {
+  formatPrint($format, $text); echo "\r\n";
 }
