@@ -30,6 +30,10 @@ function deleteBibliography($page,bool $debug = false) {
 
 function createBibliography($page,bool $debug = false) {
 
+  if ((PHP_SAPI === 'cli') && ! $debug) {
+    echo "\n";
+  }
+
   $debug && formatPrintLn(['underline'],"\nWorking on items...");
 
   /**
@@ -42,7 +46,9 @@ function createBibliography($page,bool $debug = false) {
 
   foreach ($zotero->getItems() as $key => $item) {
     $debug && print("Item " . $key);
-
+    if ((PHP_SAPI === 'cli') && ! $debug) {
+      echo "+";
+    }
     /**
      * First it will be checked, if a child page already exists.
      */
@@ -71,7 +77,11 @@ function createBibliography($page,bool $debug = false) {
     }
   }
 
-  $debug && formatPrintLn(['underline'],"\nWorking on attachments and notes...");
+  if ((PHP_SAPI === 'cli') && ! $debug) {
+    echo "\n";
+  }
+
+  $debug && formatPrintLn(['underline'],"\nWorking on Attachments and Notes...");
 
   /**
    * After working on the items, the attachments and notes will be fetched.
@@ -82,7 +92,9 @@ function createBibliography($page,bool $debug = false) {
   $zotero->request()->decodeContent();
 
   foreach ($zotero->getItems() as $key => $item) {
-    $debug && print("Item " . $key);
+    if ((PHP_SAPI === 'cli') && ! $debug) {
+      echo ".";
+    }
     $data = $item->getData();
     $parentSlug = Str::slug($data->parentItem);
     $parentPage = $page->find($parentSlug);
@@ -91,6 +103,7 @@ function createBibliography($page,bool $debug = false) {
      * Attachments
      */
     if ($data->itemType === 'attachment') {
+      $debug && print("Atmt " . $key);
       /**
        * First it will be checked, if a file already exist. If not, it will
        * be fetched. If it exists, the version number will be compared. If
@@ -157,6 +170,7 @@ function createBibliography($page,bool $debug = false) {
      * Notes
      */
     if ($data->itemType === 'note') {
+      $debug && print("Note " . $key);
       $note = ['version' => $data->version, 'note' => $data->note];
       $noteFile = $page->root() . '/' . $parentSlug . '/note-' . strtotime($data->dateAdded) . '.json';
       if (F::exists($noteFile)) {
@@ -176,6 +190,10 @@ function createBibliography($page,bool $debug = false) {
       F::write($noteFile,json_encode($note,JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
       $debug && formatPrintLn(['green'],", done.");
     }
+  }
+
+  if ((PHP_SAPI === 'cli') && ! $debug) {
+    echo "\n";
   }
 
   /**
