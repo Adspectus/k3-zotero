@@ -1,0 +1,7 @@
+name: k3-zotero
+title: Kirby 3 plugin for bibliographies from Zotero
+asciidoc:
+  attributes:
+    source-language: asciidoc@
+nav:
+- modules/ROOT/nav.adoc

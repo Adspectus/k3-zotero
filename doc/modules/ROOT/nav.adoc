@@ -1,0 +1,2 @@
+* Folder
+** xref:folder/document.adoc[]
