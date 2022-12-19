@@ -1,3 +1,11 @@
-= Kirby 3 plugin for bibliographies from Zotero
+= k3-zotero
+Uwe Gehring <uwe@imap.cc>
+:source-highlighter: rouge
 
-Hello World!
+[.lead]
+A Kirby 3 plugin to include bibliographies from Zotero
+
+This is the start page of the documentation for the `k3-zotero` Plugin for Kirby 3.
+
+* xref:installation.adoc[Getting started]
+
