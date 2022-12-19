@@ -1,2 +1,1 @@
-* Folder
-** xref:folder/document.adoc[]
+* xref:Installation.adoc[]
