@@ -6,7 +6,7 @@
 [![PHP version](https://img.shields.io/static/v1?label=PHP&message=7.3%2B&color=8892bf&style=flat-square)](https://php.net/)
 
 
-Kirby 3 plugin to show bibliographies from Zotero.
+Kirby 3 plugin to access bibliographies from Zotero.
 
 The zotero plugin...
 
