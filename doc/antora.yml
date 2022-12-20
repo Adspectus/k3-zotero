@@ -1,7 +1,0 @@
-name: k3-zotero
-title: k3-zotero
-asciidoc:
-  attributes:
-    source-language: asciidoc@
-nav:
-- modules/ROOT/nav.adoc
